@@ -1,35 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/Navbar.jsx";
+import HomePage from "./pages/HomePage.jsx";
+import ProductDetailPage from "./pages/ProductDetailPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import CartPage from "./pages/CartPage.jsx";
+import CheckoutPage from "./pages/CheckoutPage.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { user } = useAuth();
+
+  const AdminRoute = ({ children }) => {
+    if (!user || user.role !== "admin") {
+      return <Navigate to="/login" replace />;
+    }
+    return children;
+  };
+
+  const UserRoute = ({ children }) => {
+    if (!user || user.role !== "user") {
+      return <Navigate to="/login" replace />;
+    }
+    return children;
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen bg-slate-50">
+      <Navbar />
+      <main className="container mx-auto px-4 py-6">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/product/:id" element={<ProductDetailPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/cart"
+            element={
+              <UserRoute>
+                <CartPage />
+              </UserRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <UserRoute>
+                <CheckoutPage />
+              </UserRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          {/* fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
