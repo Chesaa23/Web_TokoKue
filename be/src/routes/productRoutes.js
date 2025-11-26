@@ -32,12 +32,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-/**
- * PENTING: urutan middleware untuk multipart:
- * upload.single("image") dulu → baru requireAdmin,
- * supaya req.body (user_id, name, dst) sudah terisi oleh multer.
- */
-
 // ADMIN: tambah produk
 router.post(
   "/admin",
@@ -112,14 +106,10 @@ router.put(
   }
 );
 
-// ADMIN: delete produk
-// ADMIN: delete produk
-// ADMIN: delete produk
 router.delete("/admin/:id", requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;
 
-    // cek dulu produk ada atau tidak
     const [rows] = await pool.query("SELECT * FROM products WHERE id = ?", [
       id,
     ]);
@@ -135,7 +125,6 @@ router.delete("/admin/:id", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("DELETE /products/admin/:id error:", err);
 
-    // kalau produk sudah dipakai di order_items (foreign key)
     if (err.code === "ER_ROW_IS_REFERENCED_2" || err.errno === 1451) {
       return res.status(400).json({
         message:
